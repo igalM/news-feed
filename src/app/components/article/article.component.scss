@@ -1,0 +1,22 @@
+.article-child {
+    display: flex;
+    align-items: baseline;
+    .number {
+        margin-right: 10px;
+    }
+    .article {
+        .title {
+            cursor: pointer;
+            .hostname {
+                color: #828282;
+                font-size: 13px;
+                cursor: auto;
+            }
+        }
+        .sub-title {
+            margin-top: -15px;
+            font-size: 13px;
+            color: #828282;
+        }
+    }
+}
