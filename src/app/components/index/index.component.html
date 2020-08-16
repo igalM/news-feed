@@ -1,7 +1,7 @@
 <div class="index-page">
 
     <div class="header">
-        <p class="title">Hacker News</p>
+        <p class="title">News Feed</p>
         <button *ngFor="let c of categories" [class.active]="clicked === c.name"
             (click)="changeCategory(c.name)">{{c.name}}</button>
     </div>

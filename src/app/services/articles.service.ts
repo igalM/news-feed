@@ -87,11 +87,11 @@ export class ArticlesService {
             this.currentArticleId++;
           }
           return article;
-        }))
-      ).subscribe((results: Article[]) => {
-        this.items = results;
-        this.loading = false;
-      });
+        })))
+        .subscribe((results: Article[]) => {
+          this.items = results;
+          this.loading = false;
+        });
     }
   }
 
