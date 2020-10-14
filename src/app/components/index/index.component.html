@@ -6,11 +6,11 @@
             (click)="changeCategory(c.name)">{{c.name}}</button>
     </div>
 
-    <p *ngIf="loading" class="loader">
+    <p *ngIf="(loading$ | async)" class="loader">
         <mat-spinner diameter="50"></mat-spinner>
     </p>
 
-    <div *ngIf="!loading" class="articles-container">
+    <div *ngIf="!(loading$ | async)" class="articles-container">
         <div *ngFor="let article of items" class="article">
             <app-article [article]="article"></app-article>
         </div>

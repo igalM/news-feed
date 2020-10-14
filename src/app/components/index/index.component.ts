@@ -2,7 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ArticlesService } from 'src/app/services/articles.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Article } from 'src/app/models/article';
-import { Subscription } from 'rxjs';
+import { Category } from 'src/app/models/category';
+import { Observable, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-index',
@@ -11,33 +12,29 @@ import { Subscription } from 'rxjs';
 })
 export class IndexComponent implements OnInit, OnDestroy {
 
-  public loading: boolean = false;
+  public loading$: Observable<boolean>;
   public items: Article[] = [];
   public clicked: string = 'New';
   public subscriptions: Subscription[] = [];
-  public categories: any[] = [
-    { id: 0, value: 'newstories', name: 'New' },
-    { id: 1, value: 'beststories', name: 'Best' },
-    { id: 2, value: 'topstories', name: 'Top' }
-  ];
+  public categories: Category[];
 
   constructor(
     private readonly articlesService: ArticlesService,
     private readonly _snackBar: MatSnackBar
   ) {
-    this.articlesService.getArticles('newstories');
 
-    this.subscriptions.push(this.articlesService.items$.subscribe(items => {
+    this.articlesService.getArticles('newstories');
+    this.categories = this.articlesService.categories
+
+    this.loading$ = this.articlesService.getLoadingFromState();
+
+    this.subscriptions.push(this.articlesService.getArticlesFromState().subscribe(items => {
       this.items = items;
       window.scrollTo({
         top: 0,
         left: 0,
         behavior: 'smooth'
       });
-    }));
-
-    this.subscriptions.push(this.articlesService.loading$.subscribe(state => {
-      this.loading = state;
     }));
   }
 

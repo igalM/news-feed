@@ -1,54 +1,62 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
-import { BehaviorSubject, forkJoin } from 'rxjs';
+import { BehaviorSubject, forkJoin, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Article } from 'src/app/models/article';
 import * as moment from 'moment';
+import { Store } from '../state';
+import { Category } from '../models/category';
 
+interface ArticlesState {
+  loading: boolean;
+  articles: Article[];
+  categories: Category[];
+}
+
+const initialState: ArticlesState = {
+  loading: false,
+  articles: [],
+  categories: [
+    { id: 0, value: 'newstories', name: 'New' },
+    { id: 1, value: 'beststories', name: 'Best' },
+    { id: 2, value: 'topstories', name: 'Top' }
+  ]
+}
 
 @Injectable()
-export class ArticlesService {
+export class ArticlesService extends Store<ArticlesState> {
 
   public ids: number[] = [];
-
-  private readonly _loading = new BehaviorSubject<boolean>(false);
-  public loading$ = this._loading.asObservable();
-
-  get loading(): boolean {
-    return this._loading.getValue();
-  }
-
-  set loading(val: boolean) {
-    this._loading.next(val);
-  }
-
-  private readonly _items = new BehaviorSubject<Article[]>([]);
-  public items$ = this._items.asObservable();
-
-  get items(): Article[] {
-    return this._items.getValue();
-  }
-
-  set items(val: Article[]) {
-    this._items.next(val);
-  }
-
   public start: number = 0;
   public end: number = 25;
   public currentArticleId: number = 1;
   public chunkSize: number = 0;
   public maxArticlesSize: number = 0;
   public type: string = 'newstories';
+  public categories: Category[];
 
-  constructor(
-    private readonly http: HttpClient
-  ) { }
+  constructor(private readonly http: HttpClient) {
+    super(initialState);
+    this.categories = initialState.categories;
+  }
+
+  getArticlesFromState(): Observable<Article[]> {
+    return this.getState().pipe(
+      map(state => {
+        return state.articles;
+      })
+    );
+  }
+
+  getLoadingFromState(): Observable<boolean> {
+    return this.getState().pipe(map(state => state.loading));
+  }
 
   getArticles(type: string) {
-    this.loading = true;
+    this.setState({ ...this.state, loading: true });
     this.http.get(`${environment.api}${type}.json`).subscribe((items: number[]) => {
-      this.loading = false;
+      this.setState({ ...this.state, loading: false });
       if (this.type !== type) {
         this.type = type;
         this.chunkSize = 0;
@@ -64,7 +72,7 @@ export class ArticlesService {
   }
 
   getArticlesChunk() {
-    this.loading = true;
+    this.setState({ ...this.state, loading: true });
     if (this.start === 100) {
       this.start = 0;
       this.end = 25;
@@ -89,8 +97,8 @@ export class ArticlesService {
           return article;
         })))
         .subscribe((results: Article[]) => {
-          this.items = results;
-          this.loading = false;
+          this.setState({ ...this.state, articles: results });
+          this.setState({ ...this.state, loading: false });
         });
     }
   }
